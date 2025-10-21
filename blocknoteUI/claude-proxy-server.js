@@ -243,24 +243,64 @@ Always provide helpful, formatted weather information with emojis and clear stru
   }
 });
 
+function parseLocation(location) {
+  // Check if it's coordinates (lat,lon format)
+  if (location.includes(',') && !isNaN(parseFloat(location.split(',')[0]))) {
+    const [lat, lon] = location.split(',').map(coord => parseFloat(coord.trim()));
+    return { type: 'coordinates', lat, lon };
+  }
+  
+  // Check if it's a zipcode (numeric)
+  if (/^\d+$/.test(location)) {
+    return { type: 'zipcode', value: location };
+  }
+  
+  // Default to city
+  return { type: 'city', value: location };
+}
+
 async function executeToolCall(toolCall) {
   try {
     const { name, input } = toolCall;
 
     if (name === 'get_current_weather') {
       const { location, country, units = 'metric' } = input;
-      const params = new URLSearchParams({ location, units });
+      
+      // Parse location to determine type and extract parameters
+      const locationData = parseLocation(location);
+      const params = new URLSearchParams({ units });
       if (country) params.append('country', country);
+      
+      if (locationData.type === 'coordinates') {
+        params.append('lat', locationData.lat);
+        params.append('lon', locationData.lon);
+      } else if (locationData.type === 'zipcode') {
+        params.append('zipcode', locationData.value);
+      } else {
+        params.append('city', locationData.value);
+      }
 
       console.log(`🌤️ Fetching current weather for ${location}`);
       const response = await axios.get(`${weatherApiUrl}/api/current?${params}`);
       return response.data;
     } else if (name === 'get_weather_forecast') {
       const { location, country, days = 5, start_date, end_date, units = 'metric' } = input;
-      const params = new URLSearchParams({ location, days, units });
+      
+      // Parse location to determine type and extract parameters
+      const locationData = parseLocation(location);
+      const params = new URLSearchParams({ days, units });
       if (country) params.append('country', country);
       if (start_date) params.append('start_date', start_date);
       if (end_date) params.append('end_date', end_date);
+      
+      if (locationData.type === 'coordinates') {
+        params.append('lat', locationData.lat);
+        params.append('lon', locationData.lon);
+      } else if (locationData.type === 'zipcode') {
+        params.append('zipcode', locationData.value);
+      } else {
+        params.append('city', locationData.value);
+      }
 
       console.log(`📊 Fetching ${days}-day forecast for ${location}`);
       if (start_date && end_date) {
@@ -275,9 +315,19 @@ async function executeToolCall(toolCall) {
       
       // Fetch weather data for all locations
       const weatherPromises = locations.map(async (location, index) => {
-        const params = new URLSearchParams({ location, units });
+        const locationData = parseLocation(location);
+        const params = new URLSearchParams({ units });
         if (countries && countries[index]) {
           params.append('country', countries[index]);
+        }
+        
+        if (locationData.type === 'coordinates') {
+          params.append('lat', locationData.lat);
+          params.append('lon', locationData.lon);
+        } else if (locationData.type === 'zipcode') {
+          params.append('zipcode', locationData.value);
+        } else {
+          params.append('city', locationData.value);
         }
         
         try {

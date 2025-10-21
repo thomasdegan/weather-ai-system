@@ -313,53 +313,87 @@ app.get('/', (req, res) => {
 // API endpoints (same as http-server.js)
 app.get('/api/current', async (req, res) => {
   try {
-    const { location, country, units = 'metric' } = req.query;
+    const { lat, lon, city, zipcode, country, units = 'metric' } = req.query;
 
     // Log the request from AI model
     console.log('🌤️ Weather MCP - Current Weather Request:');
-    console.log(`   Location: ${location}`);
+    console.log(`   Lat: ${lat || 'not specified'}`);
+    console.log(`   Lon: ${lon || 'not specified'}`);
+    console.log(`   City: ${city || 'not specified'}`);
+    console.log(`   Zipcode: ${zipcode || 'not specified'}`);
     console.log(`   Country: ${country || 'not specified'}`);
     console.log(`   Units: ${units}`);
     console.log(`   Timestamp: ${new Date().toISOString()}`);
     console.log('---');
 
-    if (!location) {
+    // Validate required parameters
+    if (!city && !zipcode && (!lat || !lon)) {
       return res.status(400).json({
         error: 'Bad Request',
-        message: 'Location parameter is required'
+        message: 'Either city, zipcode, or both lat and lon parameters are required'
       });
     }
 
-    const locationData = parseLocation(location);
-    
+    // Check for conflicting parameters
+    const locationParams = [city, zipcode, (lat && lon ? 'coordinates' : null)].filter(Boolean);
+    if (locationParams.length > 1) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Provide only one location parameter: city, zipcode, or lat/lon coordinates'
+      });
+    }
+
+    // Validate units parameter
+    const validUnits = ['metric', 'imperial', 'kelvin'];
+    if (!validUnits.includes(units)) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Units must be one of: metric, imperial, kelvin'
+      });
+    }
+
     let weatherData;
-    if (locationData.type === 'coordinates') {
-      weatherData = await weatherService.getCurrentWeather(
-        locationData.lat,
-        locationData.lon,
-        units
-      );
-    } else if (locationData.type === 'zipcode') {
-      weatherData = await weatherService.getCurrentWeatherByZipcode(
-        locationData.value,
-        country,
-        units
-      );
+    if (zipcode) {
+      weatherData = await weatherService.getCurrentWeatherByZipcode(zipcode, country, units);
+    } else if (city) {
+      weatherData = await weatherService.getCurrentWeatherByCity(city, country, units);
     } else {
-      weatherData = await weatherService.getCurrentWeatherByCity(
-        locationData.value,
-        country,
-        units
-      );
+      const latitude = parseFloat(lat);
+      const longitude = parseFloat(lon);
+
+      if (isNaN(latitude) || isNaN(longitude)) {
+        return res.status(400).json({
+          error: 'Bad Request',
+          message: 'Latitude and longitude must be valid numbers'
+        });
+      }
+
+      if (latitude < -90 || latitude > 90) {
+        return res.status(400).json({
+          error: 'Bad Request',
+          message: 'Latitude must be between -90 and 90'
+        });
+      }
+
+      if (longitude < -180 || longitude > 180) {
+        return res.status(400).json({
+          error: 'Bad Request',
+          message: 'Longitude must be between -180 and 180'
+        });
+      }
+
+      weatherData = await weatherService.getCurrentWeather(latitude, longitude, units);
     }
 
     // Log successful response
-    console.log(`✅ Weather data retrieved for ${location}`);
+    const locationName = city || zipcode || `${lat},${lon}`;
+    console.log(`✅ Weather data retrieved for ${locationName}`);
     console.log('---');
 
     res.json(weatherData);
   } catch (error) {
-    console.log(`❌ Error getting weather for ${location}: ${error.message}`);
+    const locationName = city || zipcode || `${lat},${lon}`;
+    console.log(`❌ Error getting weather for ${locationName}: ${error.message}`);
     console.log('---');
     
     res.status(500).json({
@@ -372,7 +406,10 @@ app.get('/api/current', async (req, res) => {
 app.get('/api/forecast', async (req, res) => {
   try {
     const { 
-      location, 
+      lat, 
+      lon, 
+      city, 
+      zipcode, 
       country, 
       days = 5, 
       start_date, 
@@ -382,7 +419,10 @@ app.get('/api/forecast', async (req, res) => {
 
     // Log the request from AI model
     console.log('📊 Weather MCP - Forecast Request:');
-    console.log(`   Location: ${location}`);
+    console.log(`   Lat: ${lat || 'not specified'}`);
+    console.log(`   Lon: ${lon || 'not specified'}`);
+    console.log(`   City: ${city || 'not specified'}`);
+    console.log(`   Zipcode: ${zipcode || 'not specified'}`);
     console.log(`   Country: ${country || 'not specified'}`);
     console.log(`   Days: ${days}`);
     console.log(`   Units: ${units}`);
@@ -391,52 +431,83 @@ app.get('/api/forecast', async (req, res) => {
     console.log(`   Timestamp: ${new Date().toISOString()}`);
     console.log('---');
 
-    if (!location) {
+    // Validate required parameters
+    if (!city && !zipcode && (!lat || !lon)) {
       return res.status(400).json({
         error: 'Bad Request',
-        message: 'Location parameter is required'
+        message: 'Either city, zipcode, or both lat and lon parameters are required'
       });
     }
 
-    const locationData = parseLocation(location);
-    
+    // Check for conflicting parameters
+    const locationParams = [city, zipcode, (lat && lon ? 'coordinates' : null)].filter(Boolean);
+    if (locationParams.length > 1) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Provide only one location parameter: city, zipcode, or lat/lon coordinates'
+      });
+    }
+
+    // Validate days parameter
+    const daysNum = parseInt(days);
+    if (isNaN(daysNum) || daysNum < 1 || daysNum > 16) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Days must be a number between 1 and 16'
+      });
+    }
+
+    // Validate units parameter
+    const validUnits = ['metric', 'imperial', 'kelvin'];
+    if (!validUnits.includes(units)) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Units must be one of: metric, imperial, kelvin'
+      });
+    }
+
     let forecastData;
-    if (locationData.type === 'coordinates') {
-      forecastData = await weatherService.getForecast(
-        locationData.lat,
-        locationData.lon,
-        parseInt(days),
-        units,
-        start_date,
-        end_date
-      );
-    } else if (locationData.type === 'zipcode') {
-      forecastData = await weatherService.getForecastByZipcode(
-        locationData.value,
-        country,
-        parseInt(days),
-        units,
-        start_date,
-        end_date
-      );
+    if (zipcode) {
+      forecastData = await weatherService.getForecastByZipcode(zipcode, country, daysNum, units, start_date, end_date);
+    } else if (city) {
+      forecastData = await weatherService.getForecastByCity(city, country, daysNum, units, start_date, end_date);
     } else {
-      forecastData = await weatherService.getForecastByCity(
-        locationData.value,
-        country,
-        parseInt(days),
-        units,
-        start_date,
-        end_date
-      );
+      const latitude = parseFloat(lat);
+      const longitude = parseFloat(lon);
+
+      if (isNaN(latitude) || isNaN(longitude)) {
+        return res.status(400).json({
+          error: 'Bad Request',
+          message: 'Latitude and longitude must be valid numbers'
+        });
+      }
+
+      if (latitude < -90 || latitude > 90) {
+        return res.status(400).json({
+          error: 'Bad Request',
+          message: 'Latitude must be between -90 and 90'
+        });
+      }
+
+      if (longitude < -180 || longitude > 180) {
+        return res.status(400).json({
+          error: 'Bad Request',
+          message: 'Longitude must be between -180 and 180'
+        });
+      }
+
+      forecastData = await weatherService.getForecast(latitude, longitude, daysNum, units, start_date, end_date);
     }
 
     // Log successful response
-    console.log(`✅ Forecast data retrieved for ${location} (${days} days)`);
+    const locationName = city || zipcode || `${lat},${lon}`;
+    console.log(`✅ Forecast data retrieved for ${locationName} (${days} days)`);
     console.log('---');
 
     res.json(forecastData);
   } catch (error) {
-    console.log(`❌ Error getting forecast for ${location}: ${error.message}`);
+    const locationName = city || zipcode || `${lat},${lon}`;
+    console.log(`❌ Error getting forecast for ${locationName}: ${error.message}`);
     console.log('---');
     
     res.status(500).json({
