@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react'
 import { BlockNoteView } from '@blocknote/react'
-import { BlockNote } from '@blocknote/core'
+import { createBlockNote } from '@blocknote/core'
 import { ClaudeProxy } from './services/ClaudeProxy'
 import { Cloud, Sun, Zap, Send, Bot, User, FileText, Brain } from 'lucide-react'
 
@@ -21,7 +21,7 @@ function AppClaude() {
   const claudeProxy = new ClaudeProxy()
 
   // Initialize BlockNote editor
-  const blockNote = new BlockNote({
+  const blockNote = createBlockNote({
     initialContent: [
       {
         type: 'paragraph',
