@@ -1,7 +1,43 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { BlockNoteView } from '@blocknote/react'
 import { ClaudeProxy } from './services/ClaudeProxy'
 import { Cloud, Sun, Zap, Send, Bot, User, FileText, Brain } from 'lucide-react'
+
+// Error Boundary Component
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = { hasError: false, error: null }
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error }
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('BlockNote Error:', error, errorInfo)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="h-full flex items-center justify-center bg-red-50 border border-red-200 rounded">
+          <div className="text-center p-4">
+            <div className="text-red-600 mb-2">⚠️ BlockNote Editor Error</div>
+            <p className="text-sm text-gray-600 mb-2">
+              The BlockNote editor encountered an error. This is a known issue with the current version.
+            </p>
+            <p className="text-xs text-gray-500">
+              The chat interface still works perfectly for weather queries!
+            </p>
+          </div>
+        </div>
+      )
+    }
+
+    return this.props.children
+  }
+}
 
 function AppClaude() {
   const [messages, setMessages] = useState([
@@ -16,10 +52,17 @@ function AppClaude() {
   const [inputValue, setInputValue] = useState('')
   const [formattedReport, setFormattedReport] = useState('Welcome to Claude Weather Assistant! 🤖🌤️\n\nI\'m powered by Claude AI and can help you with:\n• Current weather conditions\n• Multi-day forecasts\n• Weather analysis and insights\n• Natural language weather queries\n\nJust ask me about weather in any location!')
   const [blockNoteEditor, setBlockNoteEditor] = useState(null)
+  const [showBlockNote, setShowBlockNote] = useState(false)
   const messagesEndRef = useRef(null)
   const claudeProxy = new ClaudeProxy()
 
-  // BlockNote editor will be initialized by BlockNoteView
+  // Delay BlockNote rendering to avoid initialization issues
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowBlockNote(true)
+    }, 100)
+    return () => clearTimeout(timer)
+  }, [])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -184,10 +227,23 @@ function AppClaude() {
                 Weather Report Editor
               </h2>
               <div className="min-h-[500px] max-h-[600px] border rounded-lg overflow-hidden">
-                <BlockNoteView
-                  onChange={(editor) => setBlockNoteEditor(editor)}
-                  className="h-full"
-                />
+                {showBlockNote ? (
+                  <div className="h-full">
+                    <ErrorBoundary>
+                      <BlockNoteView
+                        onChange={(editor) => setBlockNoteEditor(editor)}
+                        className="h-full"
+                      />
+                    </ErrorBoundary>
+                  </div>
+                ) : (
+                  <div className="h-full flex items-center justify-center bg-gray-50">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-weather-blue mx-auto mb-4"></div>
+                      <p className="text-gray-600">Loading BlockNote Editor...</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
