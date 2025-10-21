@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react'
-import '@blocknote/core/fonts/inter.css'
+import '@blocknote/core/style.css'
 import '@blocknote/mantine/style.css'
 import { useCreateBlockNote } from '@blocknote/react'
 import { BlockNoteView } from '@blocknote/mantine'
