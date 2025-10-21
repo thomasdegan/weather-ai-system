@@ -1,4 +1,6 @@
 import React, { useState, useRef } from 'react'
+import { BlockNoteView } from '@blocknote/react'
+import { BlockNote } from '@blocknote/core'
 import { ClaudeProxy } from './services/ClaudeProxy'
 import { Cloud, Sun, Zap, Send, Bot, User, FileText, Brain } from 'lucide-react'
 
@@ -14,11 +16,32 @@ function AppClaude() {
   const [isLoading, setIsLoading] = useState(false)
   const [inputValue, setInputValue] = useState('')
   const [formattedReport, setFormattedReport] = useState('Welcome to Claude Weather Assistant! 🤖🌤️\n\nI\'m powered by Claude AI and can help you with:\n• Current weather conditions\n• Multi-day forecasts\n• Weather analysis and insights\n• Natural language weather queries\n\nJust ask me about weather in any location!')
+  const [editor, setEditor] = useState(null)
   const messagesEndRef = useRef(null)
   const claudeProxy = new ClaudeProxy()
 
+  // Initialize BlockNote editor
+  const blockNote = new BlockNote({
+    initialContent: [
+      {
+        type: 'paragraph',
+        content: 'Welcome to Claude Weather Assistant! 🤖🌤️\n\nI\'m powered by Claude AI and can help you with:\n• Current weather conditions\n• Multi-day forecasts\n• Weather analysis and insights\n• Natural language weather queries\n\nJust ask me about weather in any location!'
+      }
+    ]
+  })
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  // Format response for BlockNote editor
+  const formatResponseForEditor = (response) => {
+    // Split response into lines and create blocks
+    const lines = response.split('\n').filter(line => line.trim())
+    return lines.map(line => ({
+      type: 'paragraph',
+      content: line.trim()
+    }))
   }
 
   const handleSubmit = async (e) => {
@@ -51,6 +74,12 @@ function AppClaude() {
       
       // Update the formatted report
       setFormattedReport(response)
+      
+      // Update the BlockNote editor with formatted response
+      if (editor) {
+        const formattedContent = formatResponseForEditor(response)
+        editor.replaceBlocks(editor.document, formattedContent)
+      }
     } catch (error) {
       const errorMessage = {
         id: Date.now() + 1,
@@ -156,17 +185,19 @@ function AppClaude() {
             </div>
           </div>
 
-          {/* Right Column - Claude's Response */}
+          {/* Right Column - BlockNote Editor */}
           <div className="space-y-6">
             <div className="weather-card p-6">
               <h2 className="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
-                <Brain className="h-6 w-6 text-purple-500 mr-2" />
-                Claude's Response
+                <FileText className="h-6 w-6 text-weather-blue mr-2" />
+                Weather Report Editor
               </h2>
-              <div className="min-h-[500px] max-h-[600px] overflow-y-auto">
-                <pre className="whitespace-pre-wrap text-sm font-mono bg-gray-50 p-4 rounded-lg border">
-                  {formattedReport}
-                </pre>
+              <div className="min-h-[500px] max-h-[600px] border rounded-lg overflow-hidden">
+                <BlockNoteView
+                  editor={blockNote}
+                  onChange={(editor) => setEditor(editor)}
+                  className="h-full"
+                />
               </div>
             </div>
           </div>

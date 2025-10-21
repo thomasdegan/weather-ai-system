@@ -1,7 +1,7 @@
 {
-  "name": "weather-claude-ui",
+  "name": "blocknote-weather-ui",
   "version": "1.0.0",
-  "description": "Weather UI with Claude AI integration for natural language weather queries",
+  "description": "BlockNote UI for weather forecast requests with Claude.ai integration",
   "main": "src/index.js",
   "type": "module",
   "scripts": {
@@ -12,10 +12,12 @@
     "proxy": "node claude-proxy-server.js",
     "proxy-dev": "node --watch claude-proxy-server.js"
   },
-  "keywords": ["weather", "claude", "ui", "chat", "ai"],
+  "keywords": ["blocknote", "weather", "claude", "ui", "editor"],
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@blocknote/core": "^0.11.0",
+    "@blocknote/react": "^0.11.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "axios": "^1.6.0",
