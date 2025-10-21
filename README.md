@@ -118,6 +118,9 @@ npm run dev
 - "Give me a 5-day forecast for London"
 - "How's the weather in 10001?"
 - "Compare the weather in New York vs Los Angeles"
+- "Are there any weather alerts in Miami?"
+- "What weather warnings are active in New York?"
+- "Show me weather alerts for London, UK"
 
 ## 📊 Service Architecture
 
@@ -225,6 +228,9 @@ curl "http://localhost:3000/api/weather/current?city=New York&units=metric"
 
 # Forecast
 curl "http://localhost:3000/api/weather/forecast?city=London&days=5&units=metric"
+
+# Weather alerts
+curl "http://localhost:3000/api/weather/alerts?city=Miami"
 ```
 
 **Weather MCP HTTP API:**
@@ -234,6 +240,9 @@ curl "http://localhost:3001/api/current?location=New York&units=metric"
 
 # Forecast
 curl "http://localhost:3001/api/forecast?location=London&days=5&units=metric"
+
+# Weather alerts
+curl "http://localhost:3001/api/alerts?location=Miami"
 ```
 
 ## 🔍 Troubleshooting
@@ -408,6 +417,7 @@ CMD ["npm", "start"]
 
 - **Current Weather:** `GET /api/weather/current`
 - **Weather Forecast:** `GET /api/weather/forecast`
+- **Weather Alerts:** `GET /api/weather/alerts`
 - **Health Check:** `GET /api/weather/health`
 - **API Docs:** `http://localhost:3000/docs`
 
@@ -415,6 +425,7 @@ CMD ["npm", "start"]
 
 - **Current Weather:** `GET /api/current`
 - **Weather Forecast:** `GET /api/forecast`
+- **Weather Alerts:** `GET /api/alerts`
 - **Health Check:** `GET /api/weather-health`
 
 ### Claude AI Integration

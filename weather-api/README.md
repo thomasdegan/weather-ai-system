@@ -5,6 +5,7 @@
 ### **Core Weather Data**
 - **Current Weather**: Get real-time weather data for any location
 - **Weather Forecasts**: Get 1-16 day weather forecasts with hourly and daily data
+- **Weather Alerts**: Get active weather alerts and warnings for any location
 - **Custom Date Ranges**: Specify exact start and end dates for forecasts
 - **Historical Data**: Access weather data for specific date ranges
 
@@ -146,6 +147,30 @@ curl "http://localhost:3000/api/weather/forecast?zipcode=10001&start_date=2025-1
 
 # International forecast
 curl "http://localhost:3000/api/weather/forecast?city=Tokyo&days=3&units=metric"
+```
+
+### **Weather Alerts**
+Get active weather alerts and warnings for a location.
+
+**Endpoint**: `GET /api/weather/alerts`
+
+**Parameters**:
+- `lat` (number): Latitude (required if no city/zipcode)
+- `lon` (number): Longitude (required if no city/zipcode)
+- `city` (string): City name (required if no lat/lon/zipcode)
+- `zipcode` (string): Zipcode/postal code (required if no lat/lon/city)
+- `country` (string): Country code (optional)
+
+**Examples**:
+```bash
+# By city
+curl "http://localhost:3000/api/weather/alerts?city=Miami"
+
+# By coordinates
+curl "http://localhost:3000/api/weather/alerts?lat=25.7617&lon=-80.1918"
+
+# By zipcode
+curl "http://localhost:3000/api/weather/alerts?zipcode=33101"
 ```
 
 ### **Health Check**

@@ -12,6 +12,7 @@ A Model Context Protocol (MCP) server that provides weather tools for Claude.ai 
 ### **Weather Tools**
 - **Current Weather**: Get real-time weather data for any location
 - **Weather Forecasts**: Get 1-16 day weather forecasts with detailed data
+- **Weather Alerts**: Get active weather alerts and warnings for any location
 - **Health Check**: Verify weather API connectivity
 - **Flexible Location Support**: Coordinates, city names, or zipcodes
 - **Multiple Units**: Celsius, Fahrenheit, or Kelvin
@@ -71,6 +72,9 @@ curl "http://localhost:3001/api/current?location=New York&units=metric"
 # Forecast
 curl "http://localhost:3001/api/forecast?location=London&days=7&units=metric"
 
+# Weather alerts
+curl "http://localhost:3001/api/alerts?location=Miami"
+
 # Health check
 curl "http://localhost:3001/api/weather-health"
 ```
@@ -87,6 +91,10 @@ npm run cli current "40.7128,-74.0060"
 # Forecast
 npm run cli forecast "London" 7
 npm run cli forecast "Tokyo" 3 "JP" "metric"
+
+# Weather alerts
+npm run cli alerts "Miami"
+npm run cli alerts "New York" "US"
 
 # Health check
 npm run cli health
