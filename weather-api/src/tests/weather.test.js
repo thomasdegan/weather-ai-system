@@ -63,8 +63,8 @@ describe('Weather API Tests', () => {
     assert.strictEqual(response.status, 200);
     assert.strictEqual(response.data.success, true);
     assert.ok(response.data.data.location);
-    assert.ok(Array.isArray(response.data.data.forecast));
-    assert.ok(response.data.data.forecast.length > 0);
+    assert.ok(Array.isArray(response.data.data.daily));
+    assert.ok(response.data.data.daily.length > 0);
   });
 
   test('Forecast by city - valid request', async () => {
@@ -79,7 +79,7 @@ describe('Weather API Tests', () => {
     assert.strictEqual(response.status, 200);
     assert.strictEqual(response.data.success, true);
     assert.ok(response.data.data.location);
-    assert.ok(Array.isArray(response.data.data.forecast));
+    assert.ok(Array.isArray(response.data.data.daily));
   });
 
   test('Current weather - missing parameters', async () => {
@@ -118,7 +118,7 @@ describe('Weather API Tests', () => {
       await axios.get(`${API_BASE_URL}/forecast`, {
         params: {
           city: 'London',
-          days: 10,
+          days: 20,
           units: 'metric'
         }
       });
