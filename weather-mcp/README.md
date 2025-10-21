@@ -1,11 +1,10 @@
 # Weather MCP Server
 
-A Model Context Protocol (MCP) server that provides weather tools for Claude.ai by connecting to your weather API. Includes multiple interfaces: MCP for Claude Desktop, HTTP API, Web Interface, and CLI.
+A Model Context Protocol (MCP) server that provides weather tools for Claude.ai by connecting to your weather API. Includes multiple interfaces: MCP for Claude Desktop, HTTP API, and CLI.
 
 ## 🌟 Features
 
 ### **Multiple Interface Options**
-- **🌐 Web Interface**: Beautiful browser-based weather interface
 - **🔗 HTTP API**: REST endpoints for programmatic access
 - **💻 CLI Tool**: Command-line interface for quick weather queries
 - **🤖 MCP Server**: Direct integration with Claude.ai via MCP
@@ -57,23 +56,7 @@ MCP_SERVER_NAME=weather-mcp
 MCP_SERVER_VERSION=1.0.0
 ```
 
-## 🌐 **Option 1: Web Interface (Recommended)**
-
-**Start the web interface:**
-```bash
-npm run web
-```
-
-**Open your browser:** `http://localhost:3001`
-
-Features:
-- Beautiful, responsive web interface
-- Current weather and forecast tabs
-- Health check functionality
-- Easy form inputs with validation
-- Pretty JSON results display
-
-## 🔗 **Option 2: HTTP API**
+## 🔗 **HTTP API**
 
 **Start the HTTP server:**
 ```bash
@@ -92,7 +75,7 @@ curl "http://localhost:3001/api/forecast?location=London&days=7&units=metric"
 curl "http://localhost:3001/api/weather-health"
 ```
 
-## 💻 **Option 3: Command Line Interface**
+## 💻 **Command Line Interface**
 
 **Use the CLI tool:**
 ```bash
@@ -319,8 +302,6 @@ weather-mcp/
 
 - `npm start`: Start the MCP server
 - `npm run dev`: Start development server with auto-restart
-- `npm run web`: Start the web interface
-- `npm run web-dev`: Start web interface with auto-restart
 - `npm run http`: Start the HTTP API server
 - `npm run http-dev`: Start HTTP API with auto-restart
 - `npm run cli`: Use the command-line interface
@@ -355,10 +336,6 @@ weather-mcp/
    - Check that the MCP server starts without errors
    - **Windows users**: Make sure the config is in `%APPDATA%\Roaming\Claude\`
 
-4. **Web Interface not loading**
-   - Check if port 3001 is available
-   - Try a different port by setting `HTTP_PORT` in your `.env` file
-   - Ensure your weather API is running on port 3000
 
 5. **CLI commands not working**
    - Make sure you're in the `weather-mcp` directory
@@ -410,18 +387,10 @@ For issues and questions:
 1. Check the troubleshooting section above
 2. Review the weather API documentation
 3. Ensure both services are running correctly
-4. Try the web interface first - it's the easiest to set up
+4. Try the HTTP API first - it's the easiest to set up
 5. Check Claude Desktop MCP configuration
 
 ## 🎯 **Quick Start Summary**
-
-**Easiest option - Web Interface:**
-```bash
-cd weather-mcp
-npm install
-npm run web
-# Open http://localhost:3001
-```
 
 **For developers - HTTP API:**
 ```bash

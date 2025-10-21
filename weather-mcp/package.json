@@ -9,8 +9,6 @@
     "dev": "node --watch src/index.js",
     "http": "node src/http-server.js",
     "http-dev": "node --watch src/http-server.js",
-    "web": "node src/web-interface.js",
-    "web-dev": "node --watch src/web-interface.js",
     "cli": "node src/cli.js"
   },
   "keywords": ["mcp", "weather", "claude", "ai", "tools"],

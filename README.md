@@ -163,15 +163,14 @@ npm start
 ```bash
 cd weather-mcp
 npm install
-npm run web  # Web interface
-# OR
 npm run http  # HTTP API
 # OR
 npm start  # MCP server for Claude Desktop
+# OR
+npm run cli  # CLI tool
 ```
 
 **Features:**
-- Web interface at `http://localhost:3001`
 - HTTP API endpoints
 - CLI tool for command-line usage
 - MCP integration for Claude Desktop
@@ -294,7 +293,6 @@ weather/
 │   │   ├── services/     # Weather API client
 │   │   ├── index.js      # MCP server
 │   │   ├── http-server.js # HTTP API server
-│   │   ├── web-interface.js # Web interface
 │   │   └── cli.js        # Command line interface
 │   ├── package.json
 │   └── README.md
@@ -321,7 +319,6 @@ npm test     # Run tests
 **Weather MCP:**
 ```bash
 cd weather-mcp
-npm run web-dev    # Web interface with auto-restart
 npm run http-dev   # HTTP API with auto-restart
 ```
 
@@ -419,7 +416,6 @@ CMD ["npm", "start"]
 - **Current Weather:** `GET /api/current`
 - **Weather Forecast:** `GET /api/forecast`
 - **Health Check:** `GET /api/weather-health`
-- **Web Interface:** `http://localhost:3002`
 
 ### Claude AI Integration
 
