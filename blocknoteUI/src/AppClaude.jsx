@@ -66,10 +66,19 @@ function AppClaude() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
+  // Debug editor state
+  useEffect(() => {
+    console.log('Editor state changed:', editor)
+  }, [editor])
+
   // Format response for BlockNote editor
   const formatResponseForEditor = (response) => {
+    console.log('formatResponseForEditor called with:', response)
+    
     // Split response into lines and create blocks
     const lines = response.split('\n').filter(line => line.trim())
+    console.log('Lines to process:', lines)
+    
     const blocks = lines.map(line => {
       const trimmed = line.trim()
       // Check if it's a heading (starts with # or is all caps)
@@ -94,13 +103,19 @@ function AppClaude() {
       }
     })
     
+    console.log('Generated blocks:', blocks)
+    
     // Update BlockNote editor if available
     if (editor) {
+      console.log('Editor is available, updating...')
       try {
         editor.replaceBlocks(editor.document, blocks)
+        console.log('Successfully updated BlockNote editor')
       } catch (error) {
-        console.log('BlockNote editor not ready yet:', error)
+        console.error('Error updating BlockNote editor:', error)
       }
+    } else {
+      console.log('Editor not available yet')
     }
     
     return blocks
@@ -138,7 +153,12 @@ function AppClaude() {
       setFormattedReport(response)
       
       // Update the BlockNote editor with formatted response
-      formatResponseForEditor(response)
+      console.log('Updating BlockNote editor with response:', response)
+      
+      // Add a small delay to ensure editor is ready
+      setTimeout(() => {
+        formatResponseForEditor(response)
+      }, 100)
     } catch (error) {
       const errorMessage = {
         id: Date.now() + 1,
