@@ -55,13 +55,18 @@ app.post('/api/claude/weather', async (req, res) => {
 
 You have access to these weather tools:
 1. Current weather: GET ${weatherApiUrl}/api/current?location={location}&country={country}&units={units}
-2. Weather forecast: GET ${weatherApiUrl}/api/forecast?location={location}&country={country}&days={days}&units={units}
+2. Weather forecast: GET ${weatherApiUrl}/api/forecast?location={location}&country={country}&days={days}&start_date={start_date}&end_date={end_date}&units={units}
 3. Weather comparison: Compare current weather between multiple locations
 
 When a user asks about weather:
 1. Parse their request to extract location, type (current/forecast/comparison), units, and other parameters
 2. Make the appropriate API call to get weather data
 3. Format the response in a helpful, conversational way
+
+For forecast requests with date ranges (e.g., "What's the weather in New Orleans from 10/30/2025-11/1/2025"):
+- Use the get_weather_forecast tool with start_date and end_date parameters
+- Convert dates to YYYY-MM-DD format (e.g., "2025-10-30" to "2025-11-01")
+- Calculate the number of days between start and end dates
 
 For comparison requests (e.g., "Compare weather in Miami vs Seattle"):
 - Use the compare_weather tool to get data for both locations
@@ -73,6 +78,7 @@ Location formats supported:
 - Zipcodes: "10001", "75001" 
 - Coordinates: "40.7128,-74.0060"
 
+Date formats: Convert user dates to YYYY-MM-DD format for API calls
 Units: metric (Celsius), imperial (Fahrenheit), kelvin
 
 Always provide helpful, formatted weather information with emojis and clear structure.`;
@@ -128,6 +134,14 @@ Always provide helpful, formatted weather information with emojis and clear stru
               days: {
                 type: 'number',
                 description: 'Number of days for forecast (1-16, default: 5)'
+              },
+              start_date: {
+                type: 'string',
+                description: 'Start date in YYYY-MM-DD format (optional)'
+              },
+              end_date: {
+                type: 'string',
+                description: 'End date in YYYY-MM-DD format (optional)'
               },
               units: {
                 type: 'string',
@@ -242,11 +256,16 @@ async function executeToolCall(toolCall) {
       const response = await axios.get(`${weatherApiUrl}/api/current?${params}`);
       return response.data;
     } else if (name === 'get_weather_forecast') {
-      const { location, country, days = 5, units = 'metric' } = input;
+      const { location, country, days = 5, start_date, end_date, units = 'metric' } = input;
       const params = new URLSearchParams({ location, days, units });
       if (country) params.append('country', country);
+      if (start_date) params.append('start_date', start_date);
+      if (end_date) params.append('end_date', end_date);
 
       console.log(`📊 Fetching ${days}-day forecast for ${location}`);
+      if (start_date && end_date) {
+        console.log(`   Date range: ${start_date} to ${end_date}`);
+      }
       const response = await axios.get(`${weatherApiUrl}/api/forecast?${params}`);
       return response.data;
     } else if (name === 'compare_weather') {
