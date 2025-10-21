@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react'
-import '@blocknote/core/style.css'
-import { BlockNoteView } from '@blocknote/react'
+import '@blocknote/core/fonts/inter.css'
+import '@blocknote/mantine/style.css'
+import { useCreateBlockNote } from '@blocknote/react'
+import { BlockNoteView } from '@blocknote/mantine'
 import { ClaudeProxy } from './services/ClaudeProxy'
 import { Cloud, Sun, Zap, Send, Bot, User, FileText, Brain } from 'lucide-react'
 
@@ -20,7 +22,15 @@ function AppClaude() {
   const messagesEndRef = useRef(null)
   const claudeProxy = new ClaudeProxy()
 
-  // BlockNote editor will be initialized by BlockNoteView
+  // Initialize BlockNote editor properly
+  const editor = useCreateBlockNote({
+    initialContent: [
+      {
+        type: 'paragraph',
+        content: 'Welcome to Claude Weather Assistant! 🤖🌤️\n\nI\'m powered by Claude AI and can help you with:\n• Current weather conditions\n• Multi-day forecasts\n• Weather analysis and insights\n• Natural language weather queries\n\nJust ask me about weather in any location!'
+      }
+    ]
+  })
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -196,10 +206,20 @@ function AppClaude() {
                 Weather Report Editor
               </h2>
               <div className="min-h-[500px] max-h-[600px] border rounded-lg overflow-hidden">
-                <BlockNoteView
-                  onChange={(editor) => setBlockNoteEditor(editor)}
-                  className="h-full"
-                />
+                {editor ? (
+                  <BlockNoteView
+                    editor={editor}
+                    onChange={(editor) => setBlockNoteEditor(editor)}
+                    className="h-full"
+                  />
+                ) : (
+                  <div className="h-full flex items-center justify-center bg-gray-50">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-weather-blue mx-auto mb-4"></div>
+                      <p className="text-gray-600">Loading BlockNote Editor...</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
