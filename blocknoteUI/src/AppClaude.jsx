@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react'
 import '@blocknote/core/style.css'
-import { BlockNoteView, useCreateBlockNote } from '@blocknote/react'
+import { BlockNoteView } from '@blocknote/react'
 import { ClaudeProxy } from './services/ClaudeProxy'
 import { Cloud, Sun, Zap, Send, Bot, User, FileText, Brain } from 'lucide-react'
 
@@ -20,15 +20,7 @@ function AppClaude() {
   const messagesEndRef = useRef(null)
   const claudeProxy = new ClaudeProxy()
 
-  // Initialize BlockNote editor properly
-  const editor = useCreateBlockNote({
-    initialContent: [
-      {
-        type: 'paragraph',
-        content: 'Welcome to Claude Weather Assistant! 🤖🌤️\n\nI\'m powered by Claude AI and can help you with:\n• Current weather conditions\n• Multi-day forecasts\n• Weather analysis and insights\n• Natural language weather queries\n\nJust ask me about weather in any location!'
-      }
-    ]
-  })
+  // BlockNote editor will be initialized by BlockNoteView
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -43,9 +35,13 @@ function AppClaude() {
       content: line.trim()
     }))
     
-    // Update BlockNote editor
+    // Update BlockNote editor if available
     if (blockNoteEditor) {
-      blockNoteEditor.replaceBlocks(blockNoteEditor.document, blocks)
+      try {
+        blockNoteEditor.replaceBlocks(blockNoteEditor.document, blocks)
+      } catch (error) {
+        console.log('BlockNote editor not ready yet:', error)
+      }
     }
     
     return blocks
@@ -201,7 +197,6 @@ function AppClaude() {
               </h2>
               <div className="min-h-[500px] max-h-[600px] border rounded-lg overflow-hidden">
                 <BlockNoteView
-                  editor={editor}
                   onChange={(editor) => setBlockNoteEditor(editor)}
                   className="h-full"
                 />
