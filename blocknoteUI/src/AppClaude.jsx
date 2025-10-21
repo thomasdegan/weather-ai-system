@@ -25,8 +25,38 @@ function AppClaude() {
     BlockNoteEditor.create({
       initialContent: [
         {
+          type: 'heading',
+          props: { level: 1 },
+          content: '🌤️ Weather AI Assistant'
+        },
+        {
           type: 'paragraph',
-          content: 'Welcome to Claude Weather Assistant! 🤖🌤️\n\nI\'m powered by Claude AI and can help you with:\n• Current weather conditions\n• Multi-day forecasts\n• Weather analysis and insights\n• Natural language weather queries\n\nJust ask me about weather in any location!'
+          content: 'Welcome! I\'m your intelligent weather assistant powered by Claude AI. Ask me anything about the weather and I\'ll provide detailed, formatted reports right here.'
+        },
+        {
+          type: 'heading',
+          props: { level: 2 },
+          content: '💡 What you can ask:'
+        },
+        {
+          type: 'bulletListItem',
+          content: 'Current weather: "What\'s the weather in New York?"'
+        },
+        {
+          type: 'bulletListItem',
+          content: 'Forecasts: "Give me a 5-day forecast for London"'
+        },
+        {
+          type: 'bulletListItem',
+          content: 'Comparisons: "Compare weather in Miami vs Seattle"'
+        },
+        {
+          type: 'bulletListItem',
+          content: 'Specific locations: "How\'s the weather in 10001?"'
+        },
+        {
+          type: 'paragraph',
+          content: 'Start by typing your weather question in the chat on the left, and I\'ll create a beautiful, detailed weather report here!'
         }
       ]
     }), 
@@ -104,50 +134,60 @@ function AppClaude() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-weather-blue via-weather-sky to-weather-ocean">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900">
       {/* Header */}
-      <div className="bg-white/10 backdrop-blur-md border-b border-white/20">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex items-center space-x-3">
-            <div className="flex items-center space-x-2">
-              <Cloud className="h-8 w-8 text-white" />
-              <Sun className="h-6 w-6 text-yellow-300" />
-              <Zap className="h-6 w-6 text-yellow-400" />
-              <Brain className="h-6 w-6 text-purple-300" />
+      <div className="bg-white/5 backdrop-blur-md border-b border-white/10">
+        <div className="max-w-6xl mx-auto px-6 py-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <Cloud className="h-10 w-10 text-blue-400" />
+                <Sun className="h-8 w-8 text-yellow-400" />
+                <Zap className="h-8 w-8 text-orange-400" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold text-white">Weather AI</h1>
+                <p className="text-blue-200">Ask me anything about the weather</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-3xl font-bold text-white">Claude Weather Assistant</h1>
-              <p className="text-white/80">Powered by Claude AI with weather MCP integration</p>
+            <div className="hidden md:flex items-center space-x-2 text-sm text-blue-200">
+              <Brain className="h-4 w-4" />
+              <span>Powered by Claude AI</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="max-w-6xl mx-auto px-6 py-8">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
           {/* Left Column - Chat Interface */}
-          <div className="space-y-6">
-            <div className="weather-card p-6">
-              <h2 className="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
-                <Bot className="h-6 w-6 text-weather-blue mr-2" />
-                Chat with Claude AI
-              </h2>
+          <div className="xl:col-span-1 space-y-6">
+            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                  <Bot className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-white">Chat with Claude</h2>
+                  <p className="text-blue-200 text-sm">Ask me about weather anywhere</p>
+                </div>
+              </div>
               
               {/* Messages */}
-              <div className="h-96 overflow-y-auto space-y-4 mb-4">
+              <div className="h-80 overflow-y-auto space-y-4 mb-6 scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-transparent">
                 {messages.map((message) => (
                   <div
                     key={message.id}
                     className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
-                      className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                      className={`max-w-xs lg:max-w-sm px-4 py-3 rounded-2xl ${
                         message.type === 'user'
-                          ? 'bg-weather-blue text-white'
-                          : 'bg-gray-100 text-gray-800'
+                          ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white'
+                          : 'bg-white/20 text-white backdrop-blur-sm'
                       }`}
                     >
-                      <div className="flex items-center space-x-2 mb-1">
+                      <div className="flex items-center space-x-2 mb-2">
                         {message.type === 'user' ? (
                           <User className="h-4 w-4" />
                         ) : (
@@ -157,16 +197,16 @@ function AppClaude() {
                           {message.timestamp.toLocaleTimeString()}
                         </span>
                       </div>
-                      <div className="whitespace-pre-wrap">{message.content}</div>
+                      <div className="whitespace-pre-wrap text-sm">{message.content}</div>
                     </div>
                   </div>
                 ))}
                 {isLoading && (
                   <div className="flex justify-start">
-                    <div className="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg">
+                    <div className="bg-white/20 text-white px-4 py-3 rounded-2xl backdrop-blur-sm">
                       <div className="flex items-center space-x-2">
                         <Bot className="h-4 w-4" />
-                        <div className="animate-pulse">Claude is thinking...</div>
+                        <div className="animate-pulse text-sm">Claude is thinking...</div>
                       </div>
                     </div>
                   </div>
@@ -175,44 +215,57 @@ function AppClaude() {
               </div>
 
               {/* Input Form */}
-              <form onSubmit={handleSubmit} className="flex space-x-2">
-                <input
-                  type="text"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  placeholder="Ask Claude about weather... (e.g., 'What's the weather in Washington, DC?')"
-                  className="flex-1 weather-input"
-                  disabled={isLoading}
-                />
-                <button
-                  type="submit"
-                  disabled={!inputValue.trim() || isLoading}
-                  className="weather-button flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Send className="h-4 w-4" />
-                </button>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    placeholder="What's the weather like in New York?"
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent backdrop-blur-sm"
+                    disabled={isLoading}
+                  />
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <button
+                      type="submit"
+                      disabled={!inputValue.trim() || isLoading}
+                      className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg text-white hover:from-blue-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                    >
+                      <Send className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+                <div className="text-xs text-blue-200 text-center">
+                  Try: "Compare weather in Miami vs Seattle" or "5-day forecast for London"
+                </div>
               </form>
             </div>
           </div>
 
-          {/* Right Column - BlockNote Editor */}
-          <div className="space-y-6">
-            <div className="weather-card p-6">
-              <h2 className="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
-                <FileText className="h-6 w-6 text-weather-blue mr-2" />
-                Weather Report Editor
-              </h2>
-              <div className="min-h-[500px] max-h-[600px] border rounded-lg overflow-hidden">
+          {/* Right Column - Weather Report */}
+          <div className="xl:col-span-2">
+            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 h-full">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
+                  <FileText className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-white">Weather Report</h2>
+                  <p className="text-green-200 text-sm">Detailed weather analysis and insights</p>
+                </div>
+              </div>
+              
+              <div className="h-[600px] border border-white/20 rounded-xl overflow-hidden bg-white/5 backdrop-blur-sm">
                 {editor ? (
                   <BlockNoteView
                     editor={editor}
                     className="h-full"
                   />
                 ) : (
-                  <div className="h-full flex items-center justify-center bg-gray-50">
+                  <div className="h-full flex items-center justify-center">
                     <div className="text-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-weather-blue mx-auto mb-4"></div>
-                      <p className="text-gray-600">Loading BlockNote Editor...</p>
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400 mx-auto mb-4"></div>
+                      <p className="text-blue-200">Loading weather editor...</p>
                     </div>
                   </div>
                 )}
