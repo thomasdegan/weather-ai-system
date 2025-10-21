@@ -17,50 +17,25 @@ function AppClaude() {
   const [isLoading, setIsLoading] = useState(false)
   const [inputValue, setInputValue] = useState('')
   const [formattedReport, setFormattedReport] = useState('Welcome to Claude Weather Assistant! 🤖🌤️\n\nI\'m powered by Claude AI and can help you with:\n• Current weather conditions\n• Multi-day forecasts\n• Weather analysis and insights\n• Natural language weather queries\n\nJust ask me about weather in any location!')
+  const [editorContent, setEditorContent] = useState([
+    { type: 'heading', props: { level: 1 }, content: '🌤️ Weather AI Assistant' },
+    { type: 'paragraph', content: 'Welcome! I\'m your intelligent weather assistant powered by Claude AI. Ask me anything about the weather and I\'ll provide detailed, formatted reports right here.' },
+    { type: 'heading', props: { level: 2 }, content: '💡 What you can ask:' },
+    { type: 'bulletListItem', content: 'Current weather: "What\'s the weather in New York?"' },
+    { type: 'bulletListItem', content: 'Forecasts: "Give me a 5-day forecast for London"' },
+    { type: 'bulletListItem', content: 'Comparisons: "Compare weather in Miami vs Seattle"' },
+    { type: 'bulletListItem', content: 'Specific locations: "How\'s the weather in 10001?"' },
+    { type: 'paragraph', content: 'Start by typing your weather question in the chat on the left, and I\'ll create a beautiful, detailed weather report here!' }
+  ])
   const messagesEndRef = useRef(null)
   const claudeProxy = new ClaudeProxy()
 
   // Initialize BlockNote editor properly
   const editor = useMemo(() => 
     BlockNoteEditor.create({
-      initialContent: [
-        {
-          type: 'heading',
-          props: { level: 1 },
-          content: '🌤️ Weather AI Assistant'
-        },
-        {
-          type: 'paragraph',
-          content: 'Welcome! I\'m your intelligent weather assistant powered by Claude AI. Ask me anything about the weather and I\'ll provide detailed, formatted reports right here.'
-        },
-        {
-          type: 'heading',
-          props: { level: 2 },
-          content: '💡 What you can ask:'
-        },
-        {
-          type: 'bulletListItem',
-          content: 'Current weather: "What\'s the weather in New York?"'
-        },
-        {
-          type: 'bulletListItem',
-          content: 'Forecasts: "Give me a 5-day forecast for London"'
-        },
-        {
-          type: 'bulletListItem',
-          content: 'Comparisons: "Compare weather in Miami vs Seattle"'
-        },
-        {
-          type: 'bulletListItem',
-          content: 'Specific locations: "How\'s the weather in 10001?"'
-        },
-        {
-          type: 'paragraph',
-          content: 'Start by typing your weather question in the chat on the left, and I\'ll create a beautiful, detailed weather report here!'
-        }
-      ]
+      initialContent: editorContent
     }), 
-  [])
+  [editorContent])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -105,18 +80,9 @@ function AppClaude() {
     
     console.log('Generated blocks:', blocks)
     
-    // Update BlockNote editor if available
-    if (editor) {
-      console.log('Editor is available, updating...')
-      try {
-        editor.replaceBlocks(editor.document, blocks)
-        console.log('Successfully updated BlockNote editor')
-      } catch (error) {
-        console.error('Error updating BlockNote editor:', error)
-      }
-    } else {
-      console.log('Editor not available yet')
-    }
+    // Update the editor content state to trigger re-render
+    console.log('Updating editor content state with new blocks')
+    setEditorContent(blocks)
     
     return blocks
   }
