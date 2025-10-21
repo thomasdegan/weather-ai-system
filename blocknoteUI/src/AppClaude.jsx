@@ -18,7 +18,6 @@ function AppClaude() {
   const [isLoading, setIsLoading] = useState(false)
   const [inputValue, setInputValue] = useState('')
   const [formattedReport, setFormattedReport] = useState('Welcome to Claude Weather Assistant! 🤖🌤️\n\nI\'m powered by Claude AI and can help you with:\n• Current weather conditions\n• Multi-day forecasts\n• Weather analysis and insights\n• Natural language weather queries\n\nJust ask me about weather in any location!')
-  const [blockNoteEditor, setBlockNoteEditor] = useState(null)
   const messagesEndRef = useRef(null)
   const claudeProxy = new ClaudeProxy()
 
@@ -91,10 +90,7 @@ function AppClaude() {
       setFormattedReport(response)
       
       // Update the BlockNote editor with formatted response
-      if (blockNoteEditor) {
-        const formattedContent = formatResponseForEditor(response)
-        blockNoteEditor.replaceBlocks(blockNoteEditor.document, formattedContent)
-      }
+      formatResponseForEditor(response)
     } catch (error) {
       const errorMessage = {
         id: Date.now() + 1,
