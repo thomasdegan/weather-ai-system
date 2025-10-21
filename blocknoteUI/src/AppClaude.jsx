@@ -70,10 +70,29 @@ function AppClaude() {
   const formatResponseForEditor = (response) => {
     // Split response into lines and create blocks
     const lines = response.split('\n').filter(line => line.trim())
-    const blocks = lines.map(line => ({
-      type: 'paragraph',
-      content: line.trim()
-    }))
+    const blocks = lines.map(line => {
+      const trimmed = line.trim()
+      // Check if it's a heading (starts with # or is all caps)
+      if (trimmed.startsWith('#') || (trimmed.length > 0 && trimmed === trimmed.toUpperCase() && trimmed.length < 50)) {
+        return {
+          type: 'heading',
+          props: { level: trimmed.startsWith('##') ? 2 : 1 },
+          content: trimmed.replace(/^#+\s*/, '')
+        }
+      }
+      // Check if it's a bullet point
+      if (trimmed.startsWith('•') || trimmed.startsWith('-') || trimmed.startsWith('*')) {
+        return {
+          type: 'bulletListItem',
+          content: trimmed.replace(/^[•\-*]\s*/, '')
+        }
+      }
+      // Regular paragraph
+      return {
+        type: 'paragraph',
+        content: trimmed
+      }
+    })
     
     // Update BlockNote editor if available
     if (editor) {
@@ -158,10 +177,10 @@ function AppClaude() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Column - Chat Interface */}
-          <div className="xl:col-span-1 space-y-6">
+          <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
               <div className="flex items-center space-x-3 mb-6">
                 <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
@@ -174,14 +193,14 @@ function AppClaude() {
               </div>
               
               {/* Messages */}
-              <div className="h-80 overflow-y-auto space-y-4 mb-6 scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-transparent">
+              <div className="h-96 overflow-y-auto space-y-4 mb-6 scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-transparent">
                 {messages.map((message) => (
                   <div
                     key={message.id}
                     className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
-                      className={`max-w-xs lg:max-w-sm px-4 py-3 rounded-2xl ${
+                      className={`max-w-md lg:max-w-lg px-4 py-3 rounded-2xl ${
                         message.type === 'user'
                           ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white'
                           : 'bg-white/20 text-white backdrop-blur-sm'
@@ -197,7 +216,7 @@ function AppClaude() {
                           {message.timestamp.toLocaleTimeString()}
                         </span>
                       </div>
-                      <div className="whitespace-pre-wrap text-sm">{message.content}</div>
+                      <div className="whitespace-pre-wrap text-sm break-words">{message.content}</div>
                     </div>
                   </div>
                 ))}
@@ -243,7 +262,7 @@ function AppClaude() {
           </div>
 
           {/* Right Column - Weather Report */}
-          <div className="xl:col-span-2">
+          <div>
             <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 h-full">
               <div className="flex items-center space-x-3 mb-6">
                 <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
