@@ -21,16 +21,20 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="h-full flex items-center justify-center bg-red-50 border border-red-200 rounded">
-          <div className="text-center p-4">
-            <div className="text-red-600 mb-2">⚠️ BlockNote Editor Error</div>
-            <p className="text-sm text-gray-600 mb-2">
-              The BlockNote editor encountered an error. This is a known issue with the current version.
-            </p>
-            <p className="text-xs text-gray-500">
-              The chat interface still works perfectly for weather queries!
+        <div className="h-full flex flex-col bg-gray-50 border border-gray-200 rounded">
+          <div className="p-3 bg-yellow-50 border-b border-yellow-200">
+            <div className="text-yellow-700 text-sm font-medium">📝 Text Editor (BlockNote Fallback)</div>
+            <p className="text-xs text-yellow-600 mt-1">
+              Using simple text editor due to BlockNote compatibility issues
             </p>
           </div>
+          <textarea
+            className="flex-1 p-4 border-0 resize-none focus:outline-none bg-white"
+            placeholder="Weather reports and notes will appear here..."
+            style={{ minHeight: '400px' }}
+            value={this.props.content || ''}
+            onChange={(e) => this.props.onChange?.(e.target.value)}
+          />
         </div>
       )
     }
@@ -53,6 +57,7 @@ function AppClaude() {
   const [formattedReport, setFormattedReport] = useState('Welcome to Claude Weather Assistant! 🤖🌤️\n\nI\'m powered by Claude AI and can help you with:\n• Current weather conditions\n• Multi-day forecasts\n• Weather analysis and insights\n• Natural language weather queries\n\nJust ask me about weather in any location!')
   const [blockNoteEditor, setBlockNoteEditor] = useState(null)
   const [showBlockNote, setShowBlockNote] = useState(false)
+  const [fallbackContent, setFallbackContent] = useState('Welcome to Claude Weather Assistant! 🤖🌤️\n\nI\'m powered by Claude AI and can help you with:\n• Current weather conditions\n• Multi-day forecasts\n• Weather analysis and insights\n• Natural language weather queries\n\nJust ask me about weather in any location!')
   const messagesEndRef = useRef(null)
   const claudeProxy = new ClaudeProxy()
 
@@ -72,10 +77,20 @@ function AppClaude() {
   const formatResponseForEditor = (response) => {
     // Split response into lines and create blocks
     const lines = response.split('\n').filter(line => line.trim())
-    return lines.map(line => ({
+    const blocks = lines.map(line => ({
       type: 'paragraph',
       content: line.trim()
     }))
+    
+    // Update BlockNote editor if available
+    if (blockNoteEditor) {
+      blockNoteEditor.replaceBlocks(blockNoteEditor.document, blocks)
+    } else {
+      // Fallback to text editor
+      setFallbackContent(response)
+    }
+    
+    return blocks
   }
 
   const handleSubmit = async (e) => {
@@ -229,7 +244,10 @@ function AppClaude() {
               <div className="min-h-[500px] max-h-[600px] border rounded-lg overflow-hidden">
                 {showBlockNote ? (
                   <div className="h-full">
-                    <ErrorBoundary>
+                    <ErrorBoundary 
+                      content={fallbackContent}
+                      onChange={setFallbackContent}
+                    >
                       <BlockNoteView
                         onChange={(editor) => setBlockNoteEditor(editor)}
                         className="h-full"
