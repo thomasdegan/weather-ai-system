@@ -210,6 +210,82 @@ export class WeatherService {
   }
 
   /**
+   * Get weather alerts for a specific location
+   * @param {number} lat - Latitude
+   * @param {number} lon - Longitude
+   * @returns {Promise<Object>} Weather alerts data
+   */
+  async getWeatherAlerts(lat, lon) {
+    try {
+      const response = await axios.get(`${this.baseUrl}/api/weather/alerts`, {
+        params: {
+          lat,
+          lon,
+        },
+        timeout: this.timeout,
+      });
+
+      return response.data;
+    } catch (error) {
+      throw this.handleApiError(error);
+    }
+  }
+
+  /**
+   * Get weather alerts by city name
+   * @param {string} city - City name
+   * @param {string} countryCode - Country code (optional)
+   * @returns {Promise<Object>} Weather alerts data
+   */
+  async getWeatherAlertsByCity(city, countryCode = null) {
+    try {
+      const params = {
+        city,
+      };
+      
+      if (countryCode) {
+        params.country = countryCode;
+      }
+
+      const response = await axios.get(`${this.baseUrl}/api/weather/alerts`, {
+        params,
+        timeout: this.timeout,
+      });
+
+      return response.data;
+    } catch (error) {
+      throw this.handleApiError(error);
+    }
+  }
+
+  /**
+   * Get weather alerts by zipcode/postal code
+   * @param {string} zipcode - Zipcode/postal code
+   * @param {string} countryCode - Country code (optional)
+   * @returns {Promise<Object>} Weather alerts data
+   */
+  async getWeatherAlertsByZipcode(zipcode, countryCode = null) {
+    try {
+      const params = {
+        zipcode,
+      };
+      
+      if (countryCode) {
+        params.country = countryCode;
+      }
+
+      const response = await axios.get(`${this.baseUrl}/api/weather/alerts`, {
+        params,
+        timeout: this.timeout,
+      });
+
+      return response.data;
+    } catch (error) {
+      throw this.handleApiError(error);
+    }
+  }
+
+  /**
    * Check if the weather API is healthy
    * @returns {Promise<Object>} Health status
    */

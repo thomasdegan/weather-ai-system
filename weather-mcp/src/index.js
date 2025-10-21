@@ -99,6 +99,24 @@ class WeatherMCPServer {
             },
           },
           {
+            name: 'get_weather_alerts',
+            description: 'Get weather alerts and warnings for a location',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                location: {
+                  type: 'string',
+                  description: 'Location to get weather alerts for (city name, zipcode, or "lat,lon" coordinates)',
+                },
+                country: {
+                  type: 'string',
+                  description: 'Country code (optional, used with city/zipcode)',
+                },
+              },
+              required: ['location'],
+            },
+          },
+          {
             name: 'get_weather_health',
             description: 'Check if the weather API is running and healthy',
             inputSchema: {
@@ -120,6 +138,8 @@ class WeatherMCPServer {
             return await this.handleCurrentWeather(args);
           case 'get_weather_forecast':
             return await this.handleWeatherForecast(args);
+          case 'get_weather_alerts':
+            return await this.handleWeatherAlerts(args);
           case 'get_weather_health':
             return await this.handleWeatherHealth();
           default:
@@ -238,6 +258,47 @@ class WeatherMCPServer {
         {
           type: 'text',
           text: JSON.stringify(forecastData, null, 2),
+        },
+      ],
+    };
+  }
+
+  async handleWeatherAlerts(args) {
+    const { location, country } = args;
+
+    if (!location) {
+      throw new Error('Location is required');
+    }
+
+    // Parse location to determine type
+    const locationData = this.parseLocation(location);
+    
+    // Use country from parsed location or provided country parameter
+    const countryToUse = locationData.country || country;
+    
+    let alertsData;
+    if (locationData.type === 'coordinates') {
+      alertsData = await this.weatherService.getWeatherAlerts(
+        locationData.lat,
+        locationData.lon
+      );
+    } else if (locationData.type === 'zipcode') {
+      alertsData = await this.weatherService.getWeatherAlertsByZipcode(
+        locationData.value,
+        countryToUse
+      );
+    } else {
+      alertsData = await this.weatherService.getWeatherAlertsByCity(
+        locationData.value,
+        countryToUse
+      );
+    }
+
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(alertsData, null, 2),
         },
       ],
     };

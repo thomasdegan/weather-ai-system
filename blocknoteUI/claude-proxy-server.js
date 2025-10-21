@@ -57,9 +57,10 @@ You have access to these weather tools:
 1. Current weather: GET ${weatherApiUrl}/api/current?location={location}&country={country}&units={units}
 2. Weather forecast: GET ${weatherApiUrl}/api/forecast?location={location}&country={country}&days={days}&start_date={start_date}&end_date={end_date}&units={units}
 3. Weather comparison: Compare current weather between multiple locations
+4. Weather alerts: GET ${weatherApiUrl}/api/alerts?location={location}&country={country}
 
 When a user asks about weather:
-1. Parse their request to extract location, type (current/forecast/comparison), units, and other parameters
+1. Parse their request to extract location, type (current/forecast/comparison/alerts), units, and other parameters
 2. Make the appropriate API call to get weather data
 3. Format the response in a helpful, conversational way
 
@@ -72,6 +73,11 @@ For comparison requests (e.g., "Compare weather in Miami vs Seattle"):
 - Use the compare_weather tool to get data for both locations
 - Present a side-by-side comparison with clear differences
 - Highlight key differences in temperature, conditions, etc.
+
+For weather alerts requests (e.g., "Are there any weather alerts in Miami?", "What weather warnings are active in New York?"):
+- Use the get_weather_alerts tool to get active weather alerts and warnings
+- Present alerts with clear severity levels, descriptions, and timeframes
+- Highlight any urgent or severe weather conditions
 
 Location formats supported:
 - City names: "New York", "London"
@@ -180,6 +186,24 @@ Always provide helpful, formatted weather information with emojis and clear stru
               }
             },
             required: ['locations']
+          }
+        },
+        {
+          name: 'get_weather_alerts',
+          description: 'Get weather alerts and warnings for a location',
+          input_schema: {
+            type: 'object',
+            properties: {
+              location: {
+                type: 'string',
+                description: 'Location to get weather alerts for (city, zipcode, or coordinates)'
+              },
+              country: {
+                type: 'string',
+                description: 'Country code (optional)'
+              }
+            },
+            required: ['location']
           }
         }
       ]
@@ -372,6 +396,29 @@ async function executeToolCall(toolCall) {
         units,
         timestamp: new Date().toISOString()
       };
+    } else if (name === 'get_weather_alerts') {
+      const { location, country } = input;
+      
+      // Parse location to determine type and extract parameters
+      const locationData = parseLocation(location);
+      const params = new URLSearchParams();
+      
+      // Use country from parsed location or provided country parameter
+      const countryToUse = locationData.country || country;
+      if (countryToUse) params.append('country', countryToUse);
+      
+      if (locationData.type === 'coordinates') {
+        params.append('lat', locationData.lat);
+        params.append('lon', locationData.lon);
+      } else if (locationData.type === 'zipcode') {
+        params.append('zipcode', locationData.value);
+      } else {
+        params.append('city', locationData.value);
+      }
+
+      console.log(`🚨 Fetching weather alerts for ${location}`);
+      const response = await axios.get(`${weatherApiUrl}/api/alerts?${params}`);
+      return response.data;
     }
 
     throw new Error(`Unknown tool: ${name}`);

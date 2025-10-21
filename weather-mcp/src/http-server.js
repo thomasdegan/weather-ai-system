@@ -203,6 +203,85 @@ app.get('/api/weather-health', async (req, res) => {
   }
 });
 
+// Weather alerts endpoint
+app.get('/api/alerts', async (req, res) => {
+  try {
+    const { lat, lon, city, zipcode, country } = req.query;
+
+    // Validate required parameters
+    if (!city && !zipcode && (!lat || !lon)) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Either city, zipcode, or both lat and lon parameters are required'
+      });
+    }
+
+    // Check for conflicting parameters
+    const locationParams = [city, zipcode, (lat && lon ? 'coordinates' : null)].filter(Boolean);
+    if (locationParams.length > 1) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Provide only one location parameter: city, zipcode, or lat/lon coordinates'
+      });
+    }
+
+    let alertsData;
+
+    if (zipcode) {
+      alertsData = await weatherService.getWeatherAlertsByZipcode(zipcode, country);
+    } else if (city) {
+      alertsData = await weatherService.getWeatherAlertsByCity(city, country);
+    } else {
+      const latitude = parseFloat(lat);
+      const longitude = parseFloat(lon);
+
+      if (isNaN(latitude) || isNaN(longitude)) {
+        return res.status(400).json({
+          error: 'Bad Request',
+          message: 'Latitude and longitude must be valid numbers'
+        });
+      }
+
+      if (latitude < -90 || latitude > 90) {
+        return res.status(400).json({
+          error: 'Bad Request',
+          message: 'Latitude must be between -90 and 90'
+        });
+      }
+
+      if (longitude < -180 || longitude > 180) {
+        return res.status(400).json({
+          error: 'Bad Request',
+          message: 'Longitude must be between -180 and 180'
+        });
+      }
+
+      alertsData = await weatherService.getWeatherAlerts(latitude, longitude);
+    }
+
+    res.json({
+      success: true,
+      data: alertsData,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Weather alerts error:', error);
+    
+    if (error.message.includes('Location not found')) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: error.message
+      });
+    }
+
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: error.message
+    });
+  }
+});
+
 // Helper function to parse location
 function parseLocation(location) {
   // Check if it's coordinates (lat,lon format)
@@ -246,6 +325,7 @@ app.listen(PORT, () => {
   console.log(`📡 Health check: http://localhost:${PORT}/health`);
   console.log(`🌡️  Current weather: http://localhost:${PORT}/api/current?location=New York`);
   console.log(`📊 Forecast: http://localhost:${PORT}/api/forecast?location=London&days=5`);
+  console.log(`🚨 Weather alerts: http://localhost:${PORT}/api/alerts?location=Miami`);
 });
 
 export default app;

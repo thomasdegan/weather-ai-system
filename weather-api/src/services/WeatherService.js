@@ -291,6 +291,98 @@ export class WeatherService {
   }
 
   /**
+   * Get weather alerts for a specific location
+   * @param {number} lat - Latitude
+   * @param {number} lon - Longitude
+   * @returns {Promise<Object>} Weather alerts data
+   */
+  async getWeatherAlerts(lat, lon) {
+    try {
+      const response = await axios.get(`${this.baseUrl}/forecast`, {
+        params: {
+          latitude: lat,
+          longitude: lon,
+          alerts: 'temperature', // Get temperature alerts
+          timezone: 'auto'
+        }
+      });
+
+      return this.formatWeatherAlerts(response.data, lat, lon);
+    } catch (error) {
+      throw this.handleApiError(error);
+    }
+  }
+
+  /**
+   * Get weather alerts by city name
+   * @param {string} city - City name
+   * @param {string} countryCode - Country code (optional)
+   * @returns {Promise<Object>} Weather alerts data
+   */
+  async getWeatherAlertsByCity(city, countryCode = null) {
+    try {
+      // First, get coordinates from city name using Nominatim (OpenStreetMap) geocoding
+      const geocodingResponse = await axios.get('https://nominatim.openstreetmap.org/search', {
+        params: {
+          q: countryCode ? `${city}, ${countryCode}` : city,
+          format: 'json',
+          limit: 1,
+          addressdetails: 1
+        },
+        headers: {
+          'User-Agent': 'WeatherAPI/1.0'
+        }
+      });
+
+      if (!geocodingResponse.data || geocodingResponse.data.length === 0) {
+        throw new Error('Location not found. Please check the city name.');
+      }
+
+      const location = geocodingResponse.data[0];
+      const lat = parseFloat(location.lat);
+      const lon = parseFloat(location.lon);
+
+      // Get weather alerts using coordinates
+      return await this.getWeatherAlerts(lat, lon);
+    } catch (error) {
+      throw this.handleApiError(error);
+    }
+  }
+
+  /**
+   * Get weather alerts by zipcode/postal code
+   * @param {string} zipcode - Zipcode/postal code
+   * @param {string} countryCode - Country code (optional)
+   * @returns {Promise<Object>} Weather alerts data
+   */
+  async getWeatherAlertsByZipcode(zipcode, countryCode = null) {
+    try {
+      // Use Open-Meteo's geocoding API for zipcode lookup
+      const geocodingResponse = await axios.get('https://geocoding-api.open-meteo.com/v1/search', {
+        params: {
+          name: zipcode,
+          count: 1,
+          language: 'en',
+          ...(countryCode && { country: countryCode })
+        }
+      });
+
+      if (!geocodingResponse.data.results || geocodingResponse.data.results.length === 0) {
+        throw new Error('Location not found. Please check the zipcode.');
+      }
+
+      const location = geocodingResponse.data.results[0];
+      const lat = parseFloat(location.latitude);
+      const lon = parseFloat(location.longitude);
+
+      // Get weather alerts using coordinates
+      return await this.getWeatherAlerts(lat, lon);
+    } catch (error) {
+      throw this.handleApiError(error);
+    }
+  }
+
+  /**
    * Format current weather data into a consistent structure
    * @param {Object} data - Raw API response
    * @param {number} lat - Latitude
@@ -335,6 +427,42 @@ export class WeatherService {
         },
         timestamp: new Date().toISOString()
       }
+    };
+  }
+
+  /**
+   * Format weather alerts data into a consistent structure
+   * @param {Object} data - Raw API response
+   * @param {number} lat - Latitude
+   * @param {number} lon - Longitude
+   * @returns {Object} Formatted weather alerts data
+   */
+  formatWeatherAlerts(data, lat, lon) {
+    const alerts = data.alerts || [];
+    
+    return {
+      location: {
+        name: data.location?.name || 'Unknown Location',
+        country: data.location?.country || 'Unknown',
+        coordinates: {
+          lat: lat,
+          lon: lon
+        }
+      },
+      alerts: alerts.map(alert => ({
+        event: alert.event || 'Weather Alert',
+        description: alert.description || 'No description available',
+        onset: alert.onset || null,
+        expires: alert.expires || null,
+        severity: alert.severity || 'Unknown',
+        certainty: alert.certainty || 'Unknown',
+        urgency: alert.urgency || 'Unknown',
+        areas: alert.areas || [],
+        tags: alert.tags || []
+      })),
+      alertCount: alerts.length,
+      hasAlerts: alerts.length > 0,
+      timestamp: new Date().toISOString()
     };
   }
 

@@ -347,6 +347,179 @@ router.get('/forecast', async (req, res) => {
 
 /**
  * @swagger
+ * /api/weather/alerts:
+ *   get:
+ *     summary: Get weather alerts for a location
+ *     description: Retrieve weather alerts and warnings for any location using coordinates, city name, or zipcode
+ *     tags: [Weather]
+ *     parameters:
+ *       - $ref: '#/components/parameters/Latitude'
+ *       - $ref: '#/components/parameters/Longitude'
+ *       - $ref: '#/components/parameters/City'
+ *       - $ref: '#/components/parameters/Zipcode'
+ *       - $ref: '#/components/parameters/Country'
+ *     responses:
+ *       200:
+ *         description: Weather alerts data retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: object
+ *                       properties:
+ *                         location:
+ *                           $ref: '#/components/schemas/Location'
+ *                         alerts:
+ *                           type: array
+ *                           items:
+ *                             type: object
+ *                             properties:
+ *                               event:
+ *                                 type: string
+ *                                 description: Alert event name
+ *                                 example: 'Heat Warning'
+ *                               description:
+ *                                 type: string
+ *                                 description: Detailed alert description
+ *                               onset:
+ *                                 type: string
+ *                                 format: date-time
+ *                                 description: Alert start time
+ *                               expires:
+ *                                 type: string
+ *                                 format: date-time
+ *                                 description: Alert expiration time
+ *                               severity:
+ *                                 type: string
+ *                                 description: Alert severity level
+ *                                 example: 'Moderate'
+ *                               certainty:
+ *                                 type: string
+ *                                 description: Alert certainty level
+ *                                 example: 'Likely'
+ *                               urgency:
+ *                                 type: string
+ *                                 description: Alert urgency level
+ *                                 example: 'Immediate'
+ *                               areas:
+ *                                 type: array
+ *                                 items:
+ *                                   type: string
+ *                                 description: Affected areas
+ *                               tags:
+ *                                 type: array
+ *                                 items:
+ *                                   type: string
+ *                                 description: Alert tags
+ *                         alertCount:
+ *                           type: number
+ *                           description: Number of active alerts
+ *                         hasAlerts:
+ *                           type: boolean
+ *                           description: Whether there are any active alerts
+ *       400:
+ *         description: Bad request - invalid parameters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Location not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.get('/alerts', async (req, res) => {
+  try {
+    const { lat, lon, city, zipcode, country } = req.query;
+
+    // Validate required parameters
+    if (!city && !zipcode && (!lat || !lon)) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Either city, zipcode, or both lat and lon parameters are required'
+      });
+    }
+
+    // Check for conflicting parameters
+    const locationParams = [city, zipcode, (lat && lon ? 'coordinates' : null)].filter(Boolean);
+    if (locationParams.length > 1) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Provide only one location parameter: city, zipcode, or lat/lon coordinates'
+      });
+    }
+
+    let alertsData;
+
+    if (zipcode) {
+      alertsData = await weatherService.getWeatherAlertsByZipcode(zipcode, country);
+    } else if (city) {
+      alertsData = await weatherService.getWeatherAlertsByCity(city, country);
+    } else {
+      const latitude = parseFloat(lat);
+      const longitude = parseFloat(lon);
+
+      if (isNaN(latitude) || isNaN(longitude)) {
+        return res.status(400).json({
+          error: 'Bad Request',
+          message: 'Latitude and longitude must be valid numbers'
+        });
+      }
+
+      if (latitude < -90 || latitude > 90) {
+        return res.status(400).json({
+          error: 'Bad Request',
+          message: 'Latitude must be between -90 and 90'
+        });
+      }
+
+      if (longitude < -180 || longitude > 180) {
+        return res.status(400).json({
+          error: 'Bad Request',
+          message: 'Longitude must be between -180 and 180'
+        });
+      }
+
+      alertsData = await weatherService.getWeatherAlerts(latitude, longitude);
+    }
+
+    res.json({
+      success: true,
+      data: alertsData,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Weather alerts error:', error);
+    
+    if (error.message.includes('Location not found')) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: error.message
+      });
+    }
+
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: error.message
+    });
+  }
+});
+
+/**
+ * @swagger
  * /api/weather/health:
  *   get:
  *     summary: Health check endpoint
