@@ -1,47 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useMemo } from 'react'
 import { BlockNoteView } from '@blocknote/react'
+import { BlockNote } from '@blocknote/core'
 import { ClaudeProxy } from './services/ClaudeProxy'
 import { Cloud, Sun, Zap, Send, Bot, User, FileText, Brain } from 'lucide-react'
-
-// Error Boundary Component
-class ErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = { hasError: false, error: null }
-  }
-
-  static getDerivedStateFromError(error) {
-    return { hasError: true, error }
-  }
-
-  componentDidCatch(error, errorInfo) {
-    console.error('BlockNote Error:', error, errorInfo)
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="h-full flex flex-col bg-gray-50 border border-gray-200 rounded">
-          <div className="p-3 bg-yellow-50 border-b border-yellow-200">
-            <div className="text-yellow-700 text-sm font-medium">📝 Text Editor (BlockNote Fallback)</div>
-            <p className="text-xs text-yellow-600 mt-1">
-              Using simple text editor due to BlockNote compatibility issues
-            </p>
-          </div>
-          <textarea
-            className="flex-1 p-4 border-0 resize-none focus:outline-none bg-white"
-            placeholder="Weather reports and notes will appear here..."
-            style={{ minHeight: '400px' }}
-            value={this.props.content || ''}
-            onChange={(e) => this.props.onChange?.(e.target.value)}
-          />
-        </div>
-      )
-    }
-
-    return this.props.children
-  }
-}
 
 function AppClaude() {
   const [messages, setMessages] = useState([
@@ -56,17 +17,19 @@ function AppClaude() {
   const [inputValue, setInputValue] = useState('')
   const [formattedReport, setFormattedReport] = useState('Welcome to Claude Weather Assistant! 🤖🌤️\n\nI\'m powered by Claude AI and can help you with:\n• Current weather conditions\n• Multi-day forecasts\n• Weather analysis and insights\n• Natural language weather queries\n\nJust ask me about weather in any location!')
   const [blockNoteEditor, setBlockNoteEditor] = useState(null)
-  const [showBlockNote, setShowBlockNote] = useState(false)
-  const [fallbackContent, setFallbackContent] = useState('Welcome to Claude Weather Assistant! 🤖🌤️\n\nI\'m powered by Claude AI and can help you with:\n• Current weather conditions\n• Multi-day forecasts\n• Weather analysis and insights\n• Natural language weather queries\n\nJust ask me about weather in any location!')
   const messagesEndRef = useRef(null)
   const claudeProxy = new ClaudeProxy()
 
-  // Delay BlockNote rendering to avoid initialization issues
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowBlockNote(true)
-    }, 100)
-    return () => clearTimeout(timer)
+  // Initialize BlockNote editor properly
+  const editor = useMemo(() => {
+    return new BlockNote({
+      initialContent: [
+        {
+          type: 'paragraph',
+          content: 'Welcome to Claude Weather Assistant! 🤖🌤️\n\nI\'m powered by Claude AI and can help you with:\n• Current weather conditions\n• Multi-day forecasts\n• Weather analysis and insights\n• Natural language weather queries\n\nJust ask me about weather in any location!'
+        }
+      ]
+    })
   }, [])
 
   const scrollToBottom = () => {
@@ -82,12 +45,9 @@ function AppClaude() {
       content: line.trim()
     }))
     
-    // Update BlockNote editor if available
+    // Update BlockNote editor
     if (blockNoteEditor) {
       blockNoteEditor.replaceBlocks(blockNoteEditor.document, blocks)
-    } else {
-      // Fallback to text editor
-      setFallbackContent(response)
     }
     
     return blocks
@@ -242,26 +202,11 @@ function AppClaude() {
                 Weather Report Editor
               </h2>
               <div className="min-h-[500px] max-h-[600px] border rounded-lg overflow-hidden">
-                {showBlockNote ? (
-                  <div className="h-full">
-                    <ErrorBoundary 
-                      content={fallbackContent}
-                      onChange={setFallbackContent}
-                    >
-                      <BlockNoteView
-                        onChange={(editor) => setBlockNoteEditor(editor)}
-                        className="h-full"
-                      />
-                    </ErrorBoundary>
-                  </div>
-                ) : (
-                  <div className="h-full flex items-center justify-center bg-gray-50">
-                    <div className="text-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-weather-blue mx-auto mb-4"></div>
-                      <p className="text-gray-600">Loading BlockNote Editor...</p>
-                    </div>
-                  </div>
-                )}
+                <BlockNoteView
+                  editor={editor}
+                  onChange={(editor) => setBlockNoteEditor(editor)}
+                  className="h-full"
+                />
               </div>
             </div>
           </div>
