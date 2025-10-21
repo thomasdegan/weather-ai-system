@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-gray-200;
+  }
+  
+  body {
+    @apply bg-gradient-to-br from-weather-blue to-weather-sky text-gray-900 font-sans;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer components {
+  .weather-card {
+    @apply bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20;
+  }
+  
+  .weather-button {
+    @apply bg-weather-blue hover:bg-weather-dark text-white font-medium px-4 py-2 rounded-lg transition-all duration-200 hover:shadow-lg hover:scale-105;
+  }
+  
+  .weather-input {
+    @apply w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-weather-blue focus:ring-2 focus:ring-weather-blue/20 transition-all duration-200 bg-white/80 backdrop-blur-sm;
+  }
+  
+  .weather-form {
+    @apply bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-white/30 p-6 space-y-4;
+  }
+}
+
+/* BlockNote Editor Styles */
+.ProseMirror {
+  @apply min-h-[400px] p-4 rounded-lg border border-gray-200 focus:border-weather-blue focus:ring-2 focus:ring-weather-blue/20;
+}
+
+.ProseMirror:focus {
+  @apply outline-none;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100 rounded-full;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-weather-blue rounded-full hover:bg-weather-dark;
+}
+
+/* Animation classes */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}

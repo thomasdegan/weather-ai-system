@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "weather-mcp": {
+      "command": "node",
+      "args": ["D:\\development\\flipside\\hackathonOct2025\\weather\\weather-mcp\\src\\index.js"],
+      "env": {
+        "WEATHER_API_URL": "http://localhost:3000"
+      }
+    }
+  }
+}
