@@ -1,5 +1,6 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useMemo } from 'react'
 import { BlockNoteView } from '@blocknote/react'
+import { createBlockNote } from '@blocknote/core'
 import { ClaudeProxy } from './services/ClaudeProxy'
 import { Cloud, Sun, Zap, Send, Bot, User, FileText, Brain } from 'lucide-react'
 
@@ -15,15 +16,21 @@ function AppClaude() {
   const [isLoading, setIsLoading] = useState(false)
   const [inputValue, setInputValue] = useState('')
   const [formattedReport, setFormattedReport] = useState('Welcome to Claude Weather Assistant! 🤖🌤️\n\nI\'m powered by Claude AI and can help you with:\n• Current weather conditions\n• Multi-day forecasts\n• Weather analysis and insights\n• Natural language weather queries\n\nJust ask me about weather in any location!')
-  const [editor, setEditor] = useState(null)
+  const [blockNoteEditor, setBlockNoteEditor] = useState(null)
   const messagesEndRef = useRef(null)
   const claudeProxy = new ClaudeProxy()
 
   // Initialize BlockNote editor
-  const [blockNote] = useState(() => {
-    // We'll let BlockNoteView handle the editor creation
-    return null
-  })
+  const editor = useMemo(() => {
+    return createBlockNote({
+      initialContent: [
+        {
+          type: 'paragraph',
+          content: 'Welcome to Claude Weather Assistant! 🤖🌤️\n\nI\'m powered by Claude AI and can help you with:\n• Current weather conditions\n• Multi-day forecasts\n• Weather analysis and insights\n• Natural language weather queries\n\nJust ask me about weather in any location!'
+        }
+      ]
+    })
+  }, [])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -71,9 +78,9 @@ function AppClaude() {
       setFormattedReport(response)
       
       // Update the BlockNote editor with formatted response
-      if (editor) {
+      if (blockNoteEditor) {
         const formattedContent = formatResponseForEditor(response)
-        editor.replaceBlocks(editor.document, formattedContent)
+        blockNoteEditor.replaceBlocks(blockNoteEditor.document, formattedContent)
       }
     } catch (error) {
       const errorMessage = {
@@ -189,7 +196,8 @@ function AppClaude() {
               </h2>
               <div className="min-h-[500px] max-h-[600px] border rounded-lg overflow-hidden">
                 <BlockNoteView
-                  onChange={(editor) => setEditor(editor)}
+                  editor={editor}
+                  onChange={(editor) => setBlockNoteEditor(editor)}
                   className="h-full"
                 />
               </div>
