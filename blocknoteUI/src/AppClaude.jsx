@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react'
-import '@blocknote/core/style.css'
+import '@blocknote/core/fonts/inter.css'
 import '@blocknote/mantine/style.css'
-import { useCreateBlockNote } from '@blocknote/react'
+import { BlockNoteEditor } from '@blocknote/core'
 import { BlockNoteView } from '@blocknote/mantine'
 import { ClaudeProxy } from './services/ClaudeProxy'
 import { Cloud, Sun, Zap, Send, Bot, User, FileText, Brain } from 'lucide-react'
@@ -23,14 +23,16 @@ function AppClaude() {
   const claudeProxy = new ClaudeProxy()
 
   // Initialize BlockNote editor properly
-  const editor = useCreateBlockNote({
-    initialContent: [
-      {
-        type: 'paragraph',
-        content: 'Welcome to Claude Weather Assistant! 🤖🌤️\n\nI\'m powered by Claude AI and can help you with:\n• Current weather conditions\n• Multi-day forecasts\n• Weather analysis and insights\n• Natural language weather queries\n\nJust ask me about weather in any location!'
-      }
-    ]
-  })
+  const editor = useMemo(() => 
+    BlockNoteEditor.create({
+      initialContent: [
+        {
+          type: 'paragraph',
+          content: 'Welcome to Claude Weather Assistant! 🤖🌤️\n\nI\'m powered by Claude AI and can help you with:\n• Current weather conditions\n• Multi-day forecasts\n• Weather analysis and insights\n• Natural language weather queries\n\nJust ask me about weather in any location!'
+        }
+      ]
+    }), 
+  [])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -46,9 +48,9 @@ function AppClaude() {
     }))
     
     // Update BlockNote editor if available
-    if (blockNoteEditor) {
+    if (editor) {
       try {
-        blockNoteEditor.replaceBlocks(blockNoteEditor.document, blocks)
+        editor.replaceBlocks(editor.document, blocks)
       } catch (error) {
         console.log('BlockNote editor not ready yet:', error)
       }
@@ -209,7 +211,6 @@ function AppClaude() {
                 {editor ? (
                   <BlockNoteView
                     editor={editor}
-                    onChange={(editor) => setBlockNoteEditor(editor)}
                     className="h-full"
                   />
                 ) : (
