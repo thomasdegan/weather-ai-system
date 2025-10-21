@@ -93,7 +93,7 @@ npm start
 cd weather-mcp
 npm run http
 ```
-✅ Weather MCP HTTP Server running on `http://localhost:3002`
+✅ Weather MCP HTTP Server running on `http://localhost:3001`
 
 **Terminal 3 - Claude Proxy Server:**
 ```bash
@@ -230,10 +230,10 @@ curl "http://localhost:3000/api/weather/forecast?city=London&days=5&units=metric
 **Weather MCP HTTP API:**
 ```bash
 # Current weather
-curl "http://localhost:3002/api/current?location=New York&units=metric"
+curl "http://localhost:3001/api/current?location=New York&units=metric"
 
 # Forecast
-curl "http://localhost:3002/api/forecast?location=London&days=5&units=metric"
+curl "http://localhost:3001/api/forecast?location=London&days=5&units=metric"
 ```
 
 ## 🔍 Troubleshooting
@@ -257,7 +257,7 @@ curl "http://localhost:3002/api/forecast?location=London&days=5&units=metric"
 
 **4. Port conflicts**
 - Weather API: port 3000
-- Weather MCP HTTP: port 3002
+- Weather MCP HTTP: port 3001
 - Claude Proxy: port 3003
 - BlockNote UI: port 3002 (Vite dev server)
 
@@ -269,7 +269,7 @@ curl "http://localhost:3002/api/forecast?location=London&days=5&units=metric"
 curl http://localhost:3000/api/weather/health
 
 # Weather MCP HTTP Server
-curl http://localhost:3002/api/weather-health
+curl http://localhost:3001/api/weather-health
 
 # Claude Proxy Server
 curl http://localhost:3003/health
@@ -478,7 +478,7 @@ cd blocknoteUI && npm run dev
 **Access points:**
 - **BlockNote UI:** `http://localhost:3002`
 - **Weather API Docs:** `http://localhost:3000/docs`
-- **Weather MCP Web:** `http://localhost:3002`
+- **Weather MCP HTTP:** `http://localhost:3001`
 
 **Test queries:**
 - "What's the weather in New York?"
