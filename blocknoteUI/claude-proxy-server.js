@@ -255,6 +255,16 @@ function parseLocation(location) {
     return { type: 'zipcode', value: location };
   }
   
+  // Check if it's city, country format (e.g., "Paris, France")
+  const cityCountryMatch = location.match(/^(.+),\s*(.+)$/);
+  if (cityCountryMatch) {
+    return {
+      type: 'city',
+      value: cityCountryMatch[1].trim(),
+      country: cityCountryMatch[2].trim()
+    };
+  }
+  
   // Default to city
   return { type: 'city', value: location };
 }
@@ -269,7 +279,10 @@ async function executeToolCall(toolCall) {
       // Parse location to determine type and extract parameters
       const locationData = parseLocation(location);
       const params = new URLSearchParams({ units });
-      if (country) params.append('country', country);
+      
+      // Use country from parsed location or provided country parameter
+      const countryToUse = locationData.country || country;
+      if (countryToUse) params.append('country', countryToUse);
       
       if (locationData.type === 'coordinates') {
         params.append('lat', locationData.lat);
@@ -289,7 +302,10 @@ async function executeToolCall(toolCall) {
       // Parse location to determine type and extract parameters
       const locationData = parseLocation(location);
       const params = new URLSearchParams({ days, units });
-      if (country) params.append('country', country);
+      
+      // Use country from parsed location or provided country parameter
+      const countryToUse = locationData.country || country;
+      if (countryToUse) params.append('country', countryToUse);
       if (start_date) params.append('start_date', start_date);
       if (end_date) params.append('end_date', end_date);
       
@@ -317,8 +333,11 @@ async function executeToolCall(toolCall) {
       const weatherPromises = locations.map(async (location, index) => {
         const locationData = parseLocation(location);
         const params = new URLSearchParams({ units });
-        if (countries && countries[index]) {
-          params.append('country', countries[index]);
+        
+        // Use country from parsed location or provided countries array
+        const countryToUse = locationData.country || (countries && countries[index]);
+        if (countryToUse) {
+          params.append('country', countryToUse);
         }
         
         if (locationData.type === 'coordinates') {

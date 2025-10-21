@@ -149,6 +149,9 @@ class WeatherMCPServer {
     // Parse location to determine type
     const locationData = this.parseLocation(location);
     
+    // Use country from parsed location or provided country parameter
+    const countryToUse = locationData.country || country;
+    
     let weatherData;
     if (locationData.type === 'coordinates') {
       weatherData = await this.weatherService.getCurrentWeather(
@@ -159,13 +162,13 @@ class WeatherMCPServer {
     } else if (locationData.type === 'zipcode') {
       weatherData = await this.weatherService.getCurrentWeatherByZipcode(
         locationData.value,
-        country,
+        countryToUse,
         units
       );
     } else {
       weatherData = await this.weatherService.getCurrentWeatherByCity(
         locationData.value,
-        country,
+        countryToUse,
         units
       );
     }
@@ -197,6 +200,9 @@ class WeatherMCPServer {
     // Parse location to determine type
     const locationData = this.parseLocation(location);
     
+    // Use country from parsed location or provided country parameter
+    const countryToUse = locationData.country || country;
+    
     let forecastData;
     if (locationData.type === 'coordinates') {
       forecastData = await this.weatherService.getForecast(
@@ -210,7 +216,7 @@ class WeatherMCPServer {
     } else if (locationData.type === 'zipcode') {
       forecastData = await this.weatherService.getForecastByZipcode(
         locationData.value,
-        country,
+        countryToUse,
         days,
         units,
         start_date,
@@ -219,7 +225,7 @@ class WeatherMCPServer {
     } else {
       forecastData = await this.weatherService.getForecastByCity(
         locationData.value,
-        country,
+        countryToUse,
         days,
         units,
         start_date,
@@ -266,6 +272,16 @@ class WeatherMCPServer {
       return {
         type: 'zipcode',
         value: location,
+      };
+    }
+
+    // Check if it's city, country format (e.g., "Paris, France")
+    const cityCountryMatch = location.match(/^(.+),\s*(.+)$/);
+    if (cityCountryMatch) {
+      return {
+        type: 'city',
+        value: cityCountryMatch[1].trim(),
+        country: cityCountryMatch[2].trim(),
       };
     }
 

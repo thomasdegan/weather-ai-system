@@ -28,6 +28,16 @@ export class WeatherService {
       }
     }
 
+    // Check if it's city, country format (e.g., "Paris, France")
+    const cityCountryMatch = location.match(/^(.+),\s*(.+)$/)
+    if (cityCountryMatch) {
+      return {
+        type: 'city',
+        value: cityCountryMatch[1].trim(),
+        country: cityCountryMatch[2].trim()
+      }
+    }
+
     // Otherwise treat as city name
     return {
       type: 'city',
@@ -43,7 +53,9 @@ export class WeatherService {
       const locationData = this.parseLocation(location)
       const params = { units }
       
-      if (country) params.country = country
+      // Use country from parsed location or provided country parameter
+      const countryToUse = locationData.country || country
+      if (countryToUse) params.country = countryToUse
 
       // Always use the same endpoint and pass location as a single parameter
       const url = `${this.baseUrl}/api/current`
@@ -65,13 +77,16 @@ export class WeatherService {
    */
   async getForecast(location, country = null, days = 5, units = 'metric', startDate = null, endDate = null) {
     try {
+      const locationData = this.parseLocation(location)
       const params = { 
         location,
         days, 
         units 
       }
       
-      if (country) params.country = country
+      // Use country from parsed location or provided country parameter
+      const countryToUse = locationData.country || country
+      if (countryToUse) params.country = countryToUse
       if (startDate) params.start_date = startDate
       if (endDate) params.end_date = endDate
 

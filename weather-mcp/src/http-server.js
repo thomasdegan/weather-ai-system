@@ -164,6 +164,16 @@ function parseLocation(location) {
     };
   }
 
+  // Check if it's city, country format (e.g., "Paris, France")
+  const cityCountryMatch = location.match(/^(.+),\s*(.+)$/);
+  if (cityCountryMatch) {
+    return {
+      type: 'city',
+      value: cityCountryMatch[1].trim(),
+      country: cityCountryMatch[2].trim(),
+    };
+  }
+
   // Otherwise treat as city name
   return {
     type: 'city',

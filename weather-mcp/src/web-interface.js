@@ -530,6 +530,7 @@ app.get('/api/weather-health', async (req, res) => {
 });
 
 function parseLocation(location) {
+  // Check if it's coordinates (lat,lon format)
   const coordMatch = location.match(/^(-?\d+\.?\d*),(-?\d+\.?\d*)$/);
   if (coordMatch) {
     return {
@@ -539,6 +540,7 @@ function parseLocation(location) {
     };
   }
 
+  // Check if it's a zipcode (numeric)
   if (/^\d+$/.test(location)) {
     return {
       type: 'zipcode',
@@ -546,6 +548,17 @@ function parseLocation(location) {
     };
   }
 
+  // Check if it's city, country format (e.g., "Paris, France")
+  const cityCountryMatch = location.match(/^(.+),\s*(.+)$/);
+  if (cityCountryMatch) {
+    return {
+      type: 'city',
+      value: cityCountryMatch[1].trim(),
+      country: cityCountryMatch[2].trim(),
+    };
+  }
+
+  // Otherwise treat as city name
   return {
     type: 'city',
     value: location,
